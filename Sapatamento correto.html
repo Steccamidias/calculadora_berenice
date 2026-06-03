@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Precificação · Calçados</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #F7F5F0; --surface: #FFFFFF; --surface2: #F0EDE6; --border: #E2DDD5;
+    --text: #1A1612; --text-muted: #7A7268; --accent: #2D5A3D;
+    --campaign: #1B4D6E; --danger: #C0392B;
+    --serif: 'DM Serif Display', Georgia, serif; --sans: 'DM Sans', sans-serif;
+  }
+  body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; padding: 2rem 1rem 4rem; }
+  .container { max-width: 680px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 2.5rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
+  header .eyebrow { font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.5rem; }
+  header h1 { font-family: var(--serif); font-size: 2.2rem; font-weight: 400; color: var(--text); line-height: 1.2; margin-bottom: 0.5rem; }
+  header p { font-size: 14px; color: var(--text-muted); font-weight: 300; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem; }
+  .card-title { font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 8px; }
+  .card-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .field { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .field:last-child { border-bottom: none; }
+  .field-name { font-size: 14px; color: var(--text); }
+  .field-hint { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .field-input { display: flex; align-items: center; gap: 4px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 4px 10px; }
+  .field-input:focus-within { border-color: var(--accent); }
+  .field-input span { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+  .field-input input { width: 80px; border: none; background: transparent; font-family: var(--sans); font-size: 14px; font-weight: 500; color: var(--text); text-align: right; outline: none; }
+  .preco-section { padding: 0.25rem 0; }
+  .preco-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+  .preco-top label { font-size: 14px; color: var(--text); }
+  .preco-value { font-family: var(--serif); font-size: 1.8rem; color: var(--accent); }
+  .preco-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; text-align: right; }
+  input[type=range] { -webkit-appearance: none; width: 100%; height: 4px; background: var(--border); border-radius: 2px; outline: none; margin-bottom: 6px; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 3px solid white; box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+  .range-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); }
+  .results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1rem; }
+  .price-card { border-radius: 14px; padding: 1.25rem; }
+  .price-card.campanha { background: var(--campaign); color: white; }
+  .price-card.normal { background: var(--surface2); border: 1px solid var(--border); }
+  .price-badge { display: inline-block; font-size: 10px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 8px; border-radius: 20px; margin-bottom: 0.75rem; }
+  .campanha .price-badge { background: rgba(255,255,255,0.2); color: rgba(255,255,255,0.9); }
+  .normal .price-badge { background: var(--border); color: var(--text-muted); }
+  .price-label { font-size: 12px; margin-bottom: 2px; }
+  .campanha .price-label { color: rgba(255,255,255,0.7); }
+  .normal .price-label { color: var(--text-muted); }
+  .price-value { font-family: var(--serif); font-size: 1.9rem; line-height: 1; margin-bottom: 4px; }
+  .campanha .price-value { color: white; }
+  .normal .price-value { color: var(--text); }
+  .price-value.negative { color: var(--danger) !important; font-size: 1.5rem; }
+  .price-sub { font-size: 12px; font-weight: 300; }
+  .price-sub2 { font-size: 11px; font-weight: 400; margin-top: 4px; padding: 3px 8px; border-radius: 20px; display: inline-block; }
+  .campanha .price-sub { color: rgba(255,255,255,0.75); }
+  .normal .price-sub { color: var(--text-muted); }
+  .campanha .price-sub2 { background: rgba(255,255,255,0.15); color: white; }
+  .normal .price-sub2 { background: var(--border); color: var(--text); }
+  .price-sub2.neg { background: rgba(192,57,43,0.12) !important; color: var(--danger) !important; }
+  .breakdown { background: var(--surface2); border-radius: 10px; padding: 1rem; }
+  .bk-row { display: flex; justify-content: space-between; font-size: 13px; padding: 5px 0; color: var(--text-muted); border-bottom: 0.5px solid var(--border); }
+  .bk-row:last-child { border-bottom: none; }
+  .bk-row.neg span:last-child { color: var(--danger); }
+  .bk-row.pos span:last-child { color: var(--accent); font-weight: 500; }
+  .bk-row.total { font-size: 14px; font-weight: 500; color: var(--text); background: var(--surface); border-radius: 8px; padding: 8px 10px; margin-top: 8px; }
+  .bk-row.total span:last-child { color: var(--accent); }
+  .bk-row.total.neg-total span:last-child { color: var(--danger); }
+  .cost-summary { display: flex; gap: 8px; margin-bottom: 1rem; }
+  .cost-chip { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1rem; text-align: center; }
+  .cost-chip .chip-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 4px; }
+  .cost-chip .chip-value { font-family: var(--serif); font-size: 1.1rem; color: var(--text); }
+  footer { text-align: center; margin-top: 2.5rem; font-size: 12px; color: var(--text-muted); }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="eyebrow">Shein · Por par</div>
+    <h1>Calculadora de Precificação</h1>
+    <p>Calçados · Defina o preço e veja o lucro nos dois cenários</p>
+  </header>
+  <div class="card">
+    <div class="card-title">Preço de cadastro na Shein</div>
+    <div class="preco-section">
+      <div class="preco-top">
+        <label>Preço cheio</label>
+        <div style="text-align:right;">
+          <div class="preco-value" id="preco-label">R$ 79,90</div>
+          <div class="preco-sub" id="preco-cliente-label">Cliente paga em campanha: R$ 71,91</div>
+        </div>
+      </div>
+      <input type="range" id="preco" min="50" max="200" value="79.90" step="0.50">
+      <div class="range-labels"><span>R$ 50</span><span>R$ 200</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Materiais</div>
+    <div class="field"><span class="field-name">Construção</span><div class="field-input"><span>R$</span><input type="number" id="construcao" value="14.70" step="0.01" min="0"></div></div>
+    <div class="field"><span class="field-name">Cabedal</span><div class="field-input"><span>R$</span><input type="number" id="cabedal" value="4.55" step="0.01" min="0"></div></div>
+    <div class="field"><span class="field-name">Forro</span><div class="field-input"><span>R$</span><input type="number" id="forro" value="0.00" step="0.01" min="0"></div></div>
+    <div class="field"><span class="field-name">Fivela</span><div class="field-input"><span>R$</span><input type="number" id="fivela" value="0.36" step="0.01" min="0"></div></div>
+    <div class="field"><span class="field-name">Biqueira</span><div class="field-input"><span>R$</span><input type="number" id="biqueira" value="0.50" step="0.01" min="0"></div></div>
+    <div class="field"><span class="field-name">Taloneira</span><div class="field-input"><span>R$</span><input type="number" id="taloneira" value="0.60" step="0.01" min="0"></div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Produção</div>
+    <div class="field"><span class="field-name">Enfachetamento Palmilha</span><div class="field-input"><span>R$</span><input type="number" id="enf_palmilha" value="1.00" step="0.01" min="0"></div></div>
+    <div class="field"><span class="field-name">Pesponto</span><div class="field-input"><span>R$</span><input type="number" id="pesponto" value="5.00" step="0.01" min="0"></div></div>
+    <div class="field"><span class="field-name">Enfachetamento Salto</span><div class="field-input"><span>R$</span><input type="number" id="enf_salto" value="1.30" step="0.01" min="0"></div></div>
+    <div class="field"><span class="field-name">Corte</span><div class="field-input"><span>R$</span><input type="number" id="corte" value="1.90" step="0.01" min="0"></div></div>
+    <div class="field"><span class="field-name">Montagem</span><div class="field-input"><span>R$</span><input type="number" id="montagem" value="8.50" step="0.01" min="0"></div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Outros Gastos</div>
+    <div class="field">
+      <div><span class="field-name">Caixa</span><div class="field-hint">Custo seu de embalagem</div></div>
+      <div class="field-input"><span>R$</span><input type="number" id="caixa" value="1.30" step="0.01" min="0"></div>
+    </div>
+    <div class="field">
+      <div><span class="field-name">Frete (Shein desconta)</span><div class="field-hint">Intermediação de frete cobrada pela Shein</div></div>
+      <div class="field-input"><span>R$</span><input type="number" id="frete" value="5.00" step="0.01" min="0"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Resultado por cenário</div>
+    <div class="results-grid" id="prices-grid"></div>
+    <div id="breakdown-wrap"></div>
+  </div>
+  <footer>Calculadora para uso interno · Shein · LTDA · 4% imposto</footer>
+</div>
+<script>
+const costFields = ['construcao','cabedal','forro','fivela','biqueira','taloneira','enf_palmilha','pesponto','enf_salto','corte','montagem','caixa','frete'];
+function v(id){ return parseFloat(document.getElementById(id).value)||0; }
+function fmt(n){ return 'R$ ' + Math.abs(n).toFixed(2).replace('.',','); }
+function pct(n){ return (n*100).toFixed(1)+'%'; }
+function calc(){
+  const preco = parseFloat(document.getElementById('preco').value);
+  document.getElementById('preco-label').textContent = 'R$ ' + preco.toFixed(2).replace('.',',');
+  document.getElementById('preco-cliente-label').textContent = 'Cliente paga em campanha: R$ ' + (preco*0.90).toFixed(2).replace('.',',');
+  const mat = v('construcao')+v('cabedal')+v('forro')+v('fivela')+v('biqueira')+v('taloneira');
+  const prod = v('enf_palmilha')+v('pesponto')+v('enf_salto')+v('corte')+v('montagem');
+  const caixa = v('caixa');
+  const frete = v('frete');
+  const custoTotal = mat + prod + caixa;
+  const shein = 0.16, camp = 0.10, imp = 0.04;
+  const comissao = preco * shein;
+  const impostos = preco * imp;
+  const descontoCamp = preco * camp;
+  const receitaNormal = preco - comissao - frete;
+  const lucroNormal = receitaNormal - impostos - custoTotal;
+  const margemNormal = lucroNormal / preco;
+  const receitaCampanha = preco - descontoCamp - comissao - frete;
+  const lucroCampanha = receitaCampanha - impostos - custoTotal;
+  const margemCampanha = lucroCampanha / preco;
+  const isNegNormal = lucroNormal < 0;
+  const isNegCamp = lucroCampanha < 0;
+  document.getElementById('prices-grid').innerHTML = `
+    <div class="price-card campanha">
+      <div class="price-badge">★ Em campanha</div>
+      <div class="price-label">Lucro líquido</div>
+      <div class="price-value ${isNegCamp?'negative':''}">${isNegCamp?'− ':''}${fmt(lucroCampanha)}</div>
+      <div class="price-sub">Receita estimada: ${fmt(receitaCampanha)}</div>
+      <div class="price-sub2 ${isNegCamp?'neg':''}">Margem: ${pct(margemCampanha)}</div>
+    </div>
+    <div class="price-card normal">
+      <div class="price-badge">Sem campanha</div>
+      <div class="price-label">Lucro líquido</div>
+      <div class="price-value ${isNegNormal?'negative':''}">${isNegNormal?'− ':''}${fmt(lucroNormal)}</div>
+      <div class="price-sub">Receita estimada: ${fmt(receitaNormal)}</div>
+      <div class="price-sub2 ${isNegNormal?'neg':''}">Margem: ${pct(margemNormal)}</div>
+    </div>`;
+  document.getElementById('breakdown-wrap').innerHTML = `
+    <div class="cost-summary">
+      <div class="cost-chip"><div class="chip-label">Materiais + Prod.</div><div class="chip-value">${fmt(mat+prod)}</div></div>
+      <div class="cost-chip"><div class="chip-label">Caixa</div><div class="chip-value">${fmt(caixa)}</div></div>
+      <div class="cost-chip"><div class="chip-label">Custo total</div><div class="chip-value">${fmt(custoTotal)}</div></div>
+    </div>
+    <div class="breakdown">
+      <div class="bk-row"><span>Preço cadastrado na Shein</span><span>R$ ${preco.toFixed(2).replace('.',',')}</span></div>
+      <div class="bk-row neg"><span>Comissão Shein (16%)</span><span>− ${fmt(comissao)}</span></div>
+      <div class="bk-row neg"><span>Desconto campanha (10%)</span><span>− ${fmt(descontoCamp)}</span></div>
+      <div class="bk-row neg"><span>Intermediação de frete</span><span>− ${fmt(frete)}</span></div>
+      <div class="bk-row neg"><span>Impostos (4%)</span><span>− ${fmt(impostos)}</span></div>
+      <div class="bk-row neg"><span>Custo produção + caixa</span><span>− ${fmt(custoTotal)}</span></div>
+      <div class="bk-row total ${isNegCamp?'neg-total':''}"><span>Lucro líquido (com campanha)</span><span>${isNegCamp?'− ':''}${fmt(lucroCampanha)}</span></div>
+      <div class="bk-row total ${isNegNormal?'neg-total':''}"><span>Lucro líquido (sem campanha)</span><span>${isNegNormal?'− ':''}${fmt(lucroNormal)}</span></div>
+    </div>`;
+}
+costFields.forEach(id => document.getElementById(id).addEventListener('input', calc));
+document.getElementById('preco').addEventListener('input', calc);
+calc();
+</script>
+</body>
+</html>
